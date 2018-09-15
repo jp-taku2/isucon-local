@@ -29,7 +29,10 @@ services:
       args:
               #        GIT_URL: https://github.com/isucon/isucon7-qualify.git
         GIT_URL: git@github.com:jp-taku2/testa.git
+              #        WORK_DIR: isubata
     image: isucon7-qualifier-app:golang
+    volumes:
+            - /home/jp_taku/work/testa/webapp/go:/home/isucon/isubata/webapp/go
     networks:
       - frontend
         #    depends_on:
