@@ -1,14 +1,9 @@
-FROM alpine AS build-dev
-
-ARG GIT_URL=https://github.com/isucon/isucon7-qualify.git
-
-RUN \
-  apk --no-cache add git && \
-  git clone --depth=1 $GIT_URL /isubata && \
-  rm -rf /isubata/.git
-
-FROM nginx:1.10
-
-COPY --from=build-dev /isubata /home/isucon/isubata
-#COPY --from=build-dev /isubata/files/app/nginx.conf /etc/nginx/conf.d/isucon.conf
-COPY isucon.conf /etc/nginx/conf.d/isucon.conf
+FROM lkwg82/h2o-http2-server
+ARG GIT_URL=https://github.com/jp-taku2/isucon8.git
+RUN apk update && apk add -U openssh git  && \
+    mkdir /root/.ssh && chmod 700 /root/.ssh && \
+    ssh-keyscan github.com >> /root/.ssh/known_hosts && \
+    git clone -b local-docker $GIT_URL /home/isucon/torb && \
+    mkdir -p /var/log/h2o && mkdir -p /var/run/h2o/
+EXPOSE 80
+COPY /default-h2o.conf /etc/h2o/h2o.conf
