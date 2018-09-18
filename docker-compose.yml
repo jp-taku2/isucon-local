@@ -21,8 +21,8 @@ services:
         GIT_URL: https://github.com/jp-taku2/isucon8.git
         #        WORK_DIR: isubata
     image: isucon8-qualifier-app:golang
-    volumes:
-    - /home/jp_taku/work/isucon8/webapp:/home/isucon/torb/webapp
+    #    volumes:
+            #    - $HOME/work/isucon8/webapp:/home/isucon/torb/webapp
     depends_on:
     - db
     networks:
@@ -30,9 +30,11 @@ services:
     ports:
     - "8080"
     environment:
-      DB_USER: isucon
-      DB_PASSWORD: isucon
+      DB_DATABASE: torb
       DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: isucon
+      DB_PASS: isucon
   db:
     build:
       context: ./docker/db
