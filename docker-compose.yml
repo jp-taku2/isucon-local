@@ -3,54 +3,60 @@ services:
   web:
     build:
       context: ./docker/web
-    image: isucon8-qualifier-web
+    image: isucon-web
     depends_on:
-    - app
+      - app
     networks:
-    - frontend
-    - backend
+      - frontend
+      - backend
     ports:
-    - "80:80"
+      - "80:80"
     volumes:
-    - ./docker/web/default-h2o.conf:/etc/h2o/h2o.conf
+      - ./docker/web/isucon.conf /etc/nginx/sites-available/isucon.conf
 
   app:
     build:
-      context: ./docker/app/golang
-      args:
-        GIT_URL: https://github.com/jp-taku2/isucon8.git
-        #        WORK_DIR: isubata
-    image: isucon8-qualifier-app:golang
-    #    volumes:
-            #    - $HOME/work/isucon8/webapp:/home/isucon/torb/webapp
+      context: ./docker/app
+    image: isucon-app:golang
+    tty: true
     depends_on:
-    - db
+      - db
     networks:
-    - backend
+      - backend
     ports:
-    - "8080"
+      - "8000"
+    volumes:
+      - document_root:/home/isucon/isucon/webapp
     environment:
-      DB_DATABASE: torb
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_USER: isucon
-      DB_PASS: isucon
+      MYSQL_DBNAME: isucon
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+      MYSQL_USER: isucon
+      MYSQL_PASS: isucon
+
   db:
     build:
       context: ./docker/db
-      args:
-        GIT_URL: https://github.com/jp-taku2/isucon8.git
-    image: isucon8-qualifier-db
+    image: isucon-db
     networks:
-    - backend
+      - backend
     ports:
-    - "3306"
+      - "3306"
     command: ["--character-set-server=utf8mb4"]
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      MYSQL_DATABASE: torb
+      MYSQL_DATABASE: isucon
       MYSQL_USER: isucon
       MYSQL_PASSWORD: isucon
+      GOPATH: /home/isucon/isucon/webapp/go/
+
 networks:
   frontend:
   backend:
+
+volumes:
+  document_root:
+    driver_opts:
+      type: none
+      device: /YOUR_webapp_dir
+      o: bind
