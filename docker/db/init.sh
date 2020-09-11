@@ -1,20 +1,14 @@
 #!/bin/bash
+set -xe
+set -o pipefail
 
-ROOT_DIR=$(cd $(dirname $0)/..; pwd)
-DB_DIR="$ROOT_DIR/db"
-BENCH_DIR="$ROOT_DIR/bench"
+CURRENT_DIR=$(cd $(dirname $0);pwd)
+export MYSQL_HOST=${MYSQL_HOST:-127.0.0.1}
+export MYSQL_PORT=${MYSQL_PORT:-3306}
+export MYSQL_USER=${MYSQL_USER:-isucari}
+export MYSQL_DBNAME=${MYSQL_DBNAME:-isucari}
+export MYSQL_PWD=${MYSQL_PASS:-isucari}
+export LANG="C.UTF-8"
+cd $CURRENT_DIR
 
-export MYSQL_PWD=isucon
-
-mysql -uisucon -e "DROP DATABASE IF EXISTS torb; CREATE DATABASE torb;"
-mysql -uisucon torb < "$DB_DIR/schema.sql"
-
-if [ ! -f "$DB_DIR/isucon8q-initial-dataset.sql.gz" ]; then
-  echo "Run the following command beforehand." 1>&2
-  echo "$ ( cd \"$BENCH_DIR\" && bin/gen-initial-dataset )" 1>&2
-  exit 1
-fi
-
-mysql -uisucon torb -e 'ALTER TABLE reservations DROP KEY event_id_and_sheet_id_idx'
-gzip -dc "$DB_DIR/isucon8q-initial-dataset.sql.gz" | mysql -uisucon torb
-mysql -uisucon torb -e 'ALTER TABLE reservations ADD KEY event_id_and_sheet_id_idx (event_id, sheet_id)'
+cat 01_schema.sql 02_categories.sql initial.sql | mysql --defaults-file=/dev/null -h $MYSQL_HOST -P $MYSQL_PORT -u $MYSQL_USER $MYSQL_DBNAME
